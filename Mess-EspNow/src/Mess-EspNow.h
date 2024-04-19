@@ -1,6 +1,3 @@
-#ifndef MESS_ESPNOW_H
-#define MESS_ESPNOW_H
-
 #include <Arduino.h>
 #include "AppQueue.h"
 #include "PacketModels.h"
@@ -81,7 +78,6 @@ class Net_EspNow {
             if (!isLoaded) { return; }
             // AppPrint("\n[EspN]", __func__);
             // AppPrintHex(raw, len);
-            
             esp_now_send(_BROADCAST_ADDR, (uint8_t*) raw, len);
         }
 
@@ -115,10 +111,13 @@ class Net_EspNow {
         msgQueue2.sendQueue(&receiv_packet);
     }
 #else
+    #include <ArduinoQueue.h>
+    ArduinoQueue<ReceivePacket2> msgQueue2(MAX_MSG_QUEUE);
+
     void receive_callback(uint8_t *sender, uint8_t *data, uint8_t len) {
         // Serial.print("\nReceiv from "); PrintBytes(sender, 6, ':');
         ReceivePacket2 receiv_packet = ReceivePacket2::make(sender, data);
-        // msgQueue2.sendQueue(&receiv_packet);
+        msgQueue2.enqueue(receiv_packet);
     }
 #endif
 
@@ -154,8 +153,9 @@ class Serv_EspNow: public Net_EspNow {
             // while (msgQueue2.getQueue(&item)) {
             //     callback(&item);
             // }
+            while (msgQueue2.item_count() > 1) {
+                item = msgQueue2.dequeue();
+                callback(&item);
+            }
         }
 };
-
-
-#endif
