@@ -18,7 +18,7 @@ enum Cue_Trigger: uint8_t {
 
 enum Type_Message: uint8_t {
    CMD_POST = 0xF0,
-   CMD_SYNC = 0xF1,
+   CMD_PAIR = 0xF1,
    CMD_ATTENDANT = 0xF2,
    CMD_TRIGGER = 0xF3,
    CMD_DEFAULT = 0xFF
@@ -147,7 +147,7 @@ union DataContent {
    AttedantItem attItem;
 };
 
-struct DataPacket2 {
+struct DataPacket {
    uint32_t timeStamp = 0;
    uint8_t groupId = 0;
    Type_Message msgType = CMD_DEFAULT;
@@ -155,8 +155,8 @@ struct DataPacket2 {
    
    DataContent content;
 
-   static DataPacket2 make(void *buff, Type_Message type, uint8_t groupId = 0) {
-      DataPacket2 packet;
+   static DataPacket make(void *buff, Type_Message type, uint8_t groupId = 0) {
+      DataPacket packet;
       packet.timeStamp = millis();
       packet.msgType = type;
       packet.groupId = groupId;
@@ -165,12 +165,12 @@ struct DataPacket2 {
    }
 };
 
-struct ReceivePacket2 {
+struct ReceivePacket {
    uint8_t sourceB[6] = { 0 };
-   DataPacket2 dataPacket;
+   DataPacket dataPacket;
 
-   static ReceivePacket2 make(const uint8_t *sourceB, const uint8_t *data) {
-      ReceivePacket2 output;
+   static ReceivePacket make(const uint8_t *sourceB, const uint8_t *data) {
+      ReceivePacket output;
       memcpy(&output.sourceB, sourceB, 6);                                  
       memcpy(&output.dataPacket, data, sizeof(dataPacket));
       return output;

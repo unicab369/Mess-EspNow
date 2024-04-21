@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include "AppQueue.h"
-#include "PacketModels.h"
 
 #ifdef ESP32
     #include <esp_now.h>
@@ -10,7 +9,17 @@
 
 byte _BROADCAST_ADDR[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
-class Net_EspNow {            
+class Interface_Net {
+    public:
+        virtual uint8_t* getMac() { 
+            uint8_t mac[6] = {0};
+            return mac; 
+        }
+
+        virtual void sendData(void* raw, size_t len) {}
+};
+
+class Base_EspNow: public Interface_Net {            
 	void addPeer(byte *peer, uint8_t channel) {
         // AppPrint("[EspN]", __func__);
 		#ifdef ESP32
@@ -72,9 +81,9 @@ class Net_EspNow {
     public: 
         uint8_t mac[6];
 
-        uint8_t* getMac() { return mac; }
+        uint8_t* getMac() override { return mac; }
 
-        void sendData(void* raw, size_t len) {
+        void sendData(void* raw, size_t len) override {
             if (!isLoaded) { return; }
             // AppPrint("\n[EspN]", __func__);
             // AppPrintHex(raw, len);
@@ -112,16 +121,17 @@ class Net_EspNow {
     }
 #else
     #include <ArduinoQueue.h>
-    ArduinoQueue<ReceivePacket2> msgQueue2(MAX_MSG_QUEUE);
+    ArduinoQueue<ReceivePacket> msgQueue2(MAX_MSG_QUEUE);
 
     void receive_callback(uint8_t *sender, uint8_t *data, uint8_t len) {
+        Serial.println("RECEIVED MESSAGES");
         // Serial.print("\nReceiv from "); PrintBytes(sender, 6, ':');
-        ReceivePacket2 receiv_packet = ReceivePacket2::make(sender, data);
+        ReceivePacket receiv_packet = ReceivePacket::make(sender, data);
         msgQueue2.enqueue(receiv_packet);
     }
 #endif
 
-class Serv_EspNow: public Net_EspNow {
+class Net_EspNow: public Base_EspNow {
     uint32_t selectedChannel = 1;
 
     void reload() {
@@ -129,7 +139,7 @@ class Serv_EspNow: public Net_EspNow {
     }
 
     public:
-        std::function<void(ReceivePacket2*)> callback = [](ReceivePacket2*){};
+        std::function<void(ReceivePacket*)> callback = [](ReceivePacket*){};
         
         void rollChannel() {
             selectedChannel++;
@@ -149,7 +159,7 @@ class Serv_EspNow: public Net_EspNow {
         }
 
         void run() {
-            ReceivePacket2 item;
+            ReceivePacket item;
             // while (msgQueue2.getQueue(&item)) {
             //     callback(&item);
             // }
