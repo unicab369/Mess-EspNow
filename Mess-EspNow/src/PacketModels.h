@@ -96,9 +96,8 @@ struct RecordItem {
    }
 
    void printData() {
-    //   Loggable logger = Loggable("RecordItem");
-    //   logger.xLogf("Data val1 = %.2f, val2 = %.2f, val3 = %.2f, val4 = %.2f, val5= %.2f", 
-    //                  value1, value2, value3, value4, value5); 
+      printf("Data val1 = %.2f, val2 = %.2f, val3 = %.2f, val4 = %.2f, val5= %.2f", 
+                     value1, value2, value3, value4, value5);
    }
 };
 
@@ -165,12 +164,12 @@ struct DataPacket {
    }
 };
 
-struct ReceivePacket {
+struct ReceivedPacket {
    uint8_t sourceB[6] = { 0 };
    DataPacket dataPacket;
 
-   static ReceivePacket make(const uint8_t *sourceB, const uint8_t *data) {
-      ReceivePacket output;
+   static ReceivedPacket make(const uint8_t *sourceB, const uint8_t *data) {
+      ReceivedPacket output;
       memcpy(&output.sourceB, sourceB, 6);                                  
       memcpy(&output.dataPacket, data, sizeof(dataPacket));
       return output;

@@ -10,7 +10,7 @@ Net_Wifi wifi;
 Net_EspNow espNow;
 Serv_Tweet tweet;
 
-int BROADCAST_CHANNEL = 6;
+int BROADCAST_CHANNEL = 10;
 
 void configureESPNow() {
    wifi.setTxPower(0);
@@ -19,7 +19,7 @@ void configureESPNow() {
    espNow.setup(WiFi.channel());
    Serial.printf("\nWifiChannel = %u", WiFi.channel());
 
-    espNow.callback = [&](ReceivePacket* packet) {
+    espNow.callback = [&](ReceivedPacket* packet) {
         DataContent content = packet->dataPacket.content;
         char output[22];
         digitalWrite(2, !digitalRead(2));
@@ -67,6 +67,8 @@ void configureESPNow() {
             }
             case CMD_POST: {
                 sprintf(output, "Recv CMD_POST");
+                content.recordItem.printData();
+
                 // device->addDisplayQueues("Recv CMD_POST: ", 6);
                 // addPlotterQueue(packet); break;
                 break;
@@ -88,10 +90,10 @@ void configureESPNow() {
 }
 
 void setup() {
+    Serial.begin(115200);
     pinMode(2, OUTPUT);
     pinMode(14, INPUT_PULLUP);
 
-    Serial.begin(115200);
     configureESPNow();
 }
 
@@ -107,4 +109,8 @@ void loop() {
     } else {
         espNow.run();
     }
+
+    // Serial.println("IM HERE");
+    // digitalWrite(2, !digitalRead(2));
+    // delay(2000);
 }

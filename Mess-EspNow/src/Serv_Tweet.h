@@ -4,7 +4,6 @@ class Template_Tweet {
         T item;
 
     public:    
-        uint8_t myChannel;
         Interface_Net* interface;
 
         void __setup(Interface_Net* _interface) {
@@ -65,7 +64,6 @@ class Tweet_Pair: public Template_Tweet<SyncItem, CMD_PAIR> {
             //! Master Initiate
             // AppPrint("\n[TwSync]", __func__);
             item.cue = SYNC_MOCK;
-            item.srcChannel = myChannel;
             item.timeStamp = millis();
             item.setSource(interface->getMac());
             __sendMessage(55);
@@ -79,7 +77,6 @@ class Tweet_Pair: public Template_Tweet<SyncItem, CMD_PAIR> {
                     memcpy(&item, receivedItem, sizeof(SyncItem));  // Clone Master message
                     // AppPrint("ReceiveTime1", item.timeStamp);
 
-                    item.destChannel = myChannel;
                     item.cue = SYNC_BOUNCE;
                     __sendMessage(55);
                     break;
@@ -120,12 +117,5 @@ class Serv_Tweet {
             pairing.__setup(interface);
             record.__setup(interface);
             command.sendStartup();
-        } 
-
-        void updateChannel(uint8_t channel) {
-            command.myChannel = channel;
-            pairing.myChannel = channel;
-            record.myChannel = channel;
-            // attendant.myChannel = channel;
         }
 };
