@@ -1,10 +1,10 @@
 #include <Arduino.h>
 
-#include "Net_Wifi.h"
+#include "Network/Net_Wifi.h"
 
-#include "PacketModels.h"
-#include "Net_EspNow.h"
-#include "Serv_Tweet.h"
+#include "Network/PacketModels.h"
+#include "Network/Net_EspNow.h"
+#include "Network/Serv_Tweet.h"
 
 Net_Wifi wifi;
 Net_EspNow espNow;
