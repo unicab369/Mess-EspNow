@@ -9,16 +9,6 @@
 
 byte _BROADCAST_ADDR[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
-class Interface_Net {
-    public:
-        virtual uint8_t* getMac() { 
-            uint8_t mac[6] = {0};
-            return mac; 
-        }
-
-        virtual void sendData(DataPacket* data, size_t len) {}
-};
-
 class Base_EspNow: public Interface_Net {            
 	void addPeer(byte *peer, uint8_t channel) {
         // AppPrint("[EspN]", __func__);

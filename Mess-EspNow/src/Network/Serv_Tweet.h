@@ -1,3 +1,13 @@
+class Interface_Net {
+    public:
+        virtual uint8_t* getMac() { 
+            uint8_t mac[6] = {0};
+            return mac; 
+        }
+
+        virtual void sendData(DataPacket* data, size_t len) {}
+};
+
 template <typename T, Type_Message command>
 class Template_Tweet {
     protected:
