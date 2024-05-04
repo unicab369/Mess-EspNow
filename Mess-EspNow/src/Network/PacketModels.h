@@ -1,11 +1,3 @@
-enum Cmd_Behavior: uint8_t {
-   ACTION_OUTPUT = 0xA0,
-   ACTION_WS2812 = 0xA1,
-   ACTION_REPORT = 0xA2,
-   ACTION_SEND = 0xA3,
-   ACTION_NONE = 0xAF
-};
-
 enum Cue_Trigger: uint8_t {
    TRIGGER_STARTUP = 0xB0,
    TRIGGER_SINGLECLICK = 0xB1,
