@@ -1,13 +1,3 @@
-enum Cue_Trigger: uint8_t {
-   TRIGGER_STARTUP = 0xB0,
-   TRIGGER_SINGLECLICK = 0xB1,
-   TRIGGER_DOUBLECLICK = 0xB2,
-   TRIGGER_PIR = 0xB3,
-   TRIGGER_IR = 0xB4,
-   TRIGGER_STATE = 0xB5,
-   TRIGGER_NONE = 0xF1,
-};
-
 enum Type_Message: uint8_t {
    CMD_POST = 0xF0,
    CMD_PAIR = 0xF1,
@@ -30,7 +20,6 @@ struct SyncItem {
 
    void setSource(uint8_t* mac) {
       memcpy(source, mac, 6);
-      timeStamp = millis();
    }
 
    bool checkSource(uint8_t* mac) {

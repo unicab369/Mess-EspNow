@@ -78,6 +78,11 @@ class Base_EspNow: public Interface_Net {
             // AppPrint("\n[EspN]", __func__);
             // AppPrintHex(raw, len);
             esp_now_send(_BROADCAST_ADDR, (uint8_t*) data, len);
+
+            #if DEBUG_ESPNOW
+                Serial.println("\n[EspN] SendMessage = ");
+                AppPrintHex(data, sizeof(DataPacket));
+            #endif
         }
 
         // void sendCustomPacket() {
@@ -114,10 +119,15 @@ class Base_EspNow: public Interface_Net {
     ArduinoQueue<ReceivedPacket> msgQueue2(MAX_MSG_QUEUE);
 
     void receive_callback(uint8_t *sender, uint8_t *data, uint8_t len) {
-        Serial.println("RECEIVED MESSAGES");
+        // Serial.println("RECEIVED MESSAGES");
         // Serial.print("\nReceiv from "); PrintBytes(sender, 6, ':');
         ReceivedPacket receiv_packet = ReceivedPacket::make(sender, data);
         msgQueue2.enqueue(receiv_packet);
+
+        #if DEBUG_ESPNOW
+            Serial.println("\n[EspN] ReceivMessage = ");
+            AppPrintHex(&receiv_packet.dataPacket, sizeof(DataPacket));
+        #endif
     }
 #endif
 
@@ -129,18 +139,7 @@ class Net_EspNow: public Base_EspNow {
     }
 
     public:
-        std::function<void(ReceivedPacket*)> callback = [](ReceivedPacket*){};
-        
-        void rollChannel() {
-            selectedChannel++;
-            if (selectedChannel>13) { selectedChannel = 1; }
-            reload();
-        }
-
-        void changeChannel(uint32_t channel) {
-            selectedChannel = channel;
-            reload();
-        }
+        // std::function<void(ReceivedPacket*)> callback = [](ReceivedPacket*){};
 
         void setup(uint32_t channel) {
             // AppPrintSeparator("[EspN]", __func__);
@@ -148,12 +147,10 @@ class Net_EspNow: public Base_EspNow {
             reload();
         }
 
-        void run() {
+        void run(std::function<void(ReceivedPacket*)> callback) {
             ReceivedPacket item;
-            // while (msgQueue2.getQueue(&item)) {
-            //     callback(&item);
-            // }
-            while (msgQueue2.item_count() > 1) {
+
+            while (msgQueue2.isEmpty() == false) {
                 item = msgQueue2.dequeue();
                 callback(&item);
             }

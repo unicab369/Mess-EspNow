@@ -23,7 +23,7 @@ class Template_Tweet {
         void __sendMessage(uint8_t groupId = 0) {
             if (interface == nullptr) return;
             DataPacket packet = DataPacket::make(&item, command, groupId);
-            interface->sendData(&packet, sizeof(DataPacket));       
+            interface->sendData(&packet, sizeof(DataPacket));
         }
 };
 
@@ -70,43 +70,20 @@ class Tweet_Pair: public Template_Tweet<SyncItem, CMD_PAIR> {
     public:
         std::function<void(uint8_t)> *onReceiveBounce;
 
-        void sendSyncMock() {
-            //! Master Initiate
-            // AppPrint("\n[TwSync]", __func__);
+        void sendSyncMock(uint8_t channel) {
             item.cue = SYNC_MOCK;
             item.timeStamp = millis();
-            item.setSource(interface->getMac());
+            item.srcChannel = channel;
+            // item.setSource(interface->getMac());
+            Serial.printf("\n** Send TimeStamp = %lu", item.timeStamp);
             __sendMessage(55);
         }
 
-        void handleMessage(SyncItem* receivedItem) {
-            switch (receivedItem->cue) {
-                case SYNC_MOCK: {
-                    //! Slave received
-                    // AppPrint("\n[TwSync] send SYNC_BOUNCE");
-                    memcpy(&item, receivedItem, sizeof(SyncItem));  // Clone Master message
-                    // AppPrint("ReceiveTime1", item.timeStamp);
-
-                    item.cue = SYNC_BOUNCE;
-                    __sendMessage(55);
-                    break;
-                }
-                case SYNC_BOUNCE: {
-                    //! Master received
-                    // AppPrint("\n[TwSync] SYNC_BOUNCE received");
-                    // if (receivedItem->checkSource(interface->getMac())) {
-                    //     uint32_t transTime = receivedItem->getTransmitTime();
-                    //     Serial.print("transTime = "); Serial.println(transTime);
-
-                    //     if (onReceiveBounce) (*onReceiveBounce)(receivedItem->destChannel);
-                    // }
-                    break;
-                }
-                default: {
-                    // AppPrint("[TwSync] Unknown");
-                    break;
-                }
-            }
+        void sendSyncBounce(uint8_t channel, uint32_t timeStamp) {
+            item.cue = SYNC_BOUNCE;
+            item.timeStamp = timeStamp;
+            item.srcChannel = channel;
+            __sendMessage(66);
         }
 };
 
