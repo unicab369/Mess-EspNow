@@ -20,34 +20,34 @@ class Mng_Network {
         char output[22];
         switch (item->cue) {
             case TRIGGER_STARTUP: {
-                sprintf(output, "Recv Startup");
+                sprintf(output, "\nRecv Startup");
                 // device->addDisplayQueues("Recv Startup", 6);
                 break;
             }
             case TRIGGER_SINGLECLICK: {
-                sprintf(output, "Recv SingleClk: %lu", item->value);
+                sprintf(output, "\nRecv SingleClk: %lu", item->value);
                 // device->addDisplayQueues(output, 6);
                 // device->led.toggle();
                 break;
             }
             case TRIGGER_DOUBLECLICK: {
-                sprintf(output, "Recv DoubleClk: %lu", item->value);
+                sprintf(output, "\nRecv DoubleClk: %lu", item->value);
                 // device->addDisplayQueues(output, 6);
                 // device->led.repeatPulses(1000);
                 break;  
             }
             case TRIGGER_PIR: {
-                sprintf(output, "Recv Pir: %lu", item->value);
+                sprintf(output, "\nRecv Pir: %lu", item->value);
                 // device->addDisplayQueues(output, 6);
                 break;
             }
             case TRIGGER_IR: {
-                sprintf(output, "Recv Ir: %lu", item->value);
+                sprintf(output, "\nRecv Ir: %lu", item->value);
                 // device->addDisplayQueues(output, 6);
                 break;
             }
             default: {
-                sprintf(output, "Recv Unknown");
+                sprintf(output, "\nRecv Unknown");
                 break;
             }
         }

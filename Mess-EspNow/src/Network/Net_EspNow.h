@@ -11,7 +11,6 @@ byte _BROADCAST_ADDR[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
 class Base_EspNow: public Interface_Net {            
 	void addPeer(byte *peer, uint8_t channel) {
-        // AppPrint("[EspN]", __func__);
 		#ifdef ESP32
 			esp_now_peer_info_t peerInfo;
 			
@@ -33,18 +32,14 @@ class Base_EspNow: public Interface_Net {
         bool isLoaded = false;
         
         void begin(int32_t channel, esp_now_recv_cb_t cb) {
-            // AppPrint("[EspN]", __func__);
             // esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
             // wifi_set_channel(channel);
 
-            if (esp_now_init() != 0) {
-				Serial.print("\n[EspN] Init failed"); 
-				return;                
-            }
+            bool check = esp_now_init() == 0;
+            Serial.printf("\n\n[EspN] Init = %u", isLoaded);
 
-            // AppPrint("[EspN] mac", WiFi.macAddress());
-            // AppPrint("[EspN] Init ch", channel);
             esp_now_register_recv_cb(cb);
+            addPeer(_BROADCAST_ADDR, channel);
 
             // // clear all the peers
             // #ifdef ESP32
@@ -60,10 +55,6 @@ class Base_EspNow: public Interface_Net {
             //     wifi_promiscuous_enable(1);
             //     wifi_set_promiscuous_rx_cb(onSniffCallback);
             // #endif
-            
-            addPeer(_BROADCAST_ADDR, channel);
-            // WiFi.macAddress(mac);
-            // AppPrint("[EspN] curr ch", WiFi.channel());
 
             isLoaded = true;
         }
@@ -75,8 +66,6 @@ class Base_EspNow: public Interface_Net {
 
         void sendData(DataPacket* data, size_t len) override {
             if (!isLoaded) { return; }
-            // AppPrint("\n[EspN]", __func__);
-            // AppPrintHex(raw, len);
             esp_now_send(_BROADCAST_ADDR, (uint8_t*) data, len);
 
             #if DEBUG_ESPNOW
@@ -110,7 +99,6 @@ class Base_EspNow: public Interface_Net {
 
 #ifdef ESP32
     void receive_callback(const uint8_t *sender, const uint8_t *data, int data_len) {
-        // AppPrint("[EspN] Received");
         // ReceivePacket2 receiv_packet = ReceivePacket2::make(sender, data);
         // msgQueue2.sendQueue(&receiv_packet);
     }
