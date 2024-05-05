@@ -45,7 +45,7 @@ class Net_Wifi {
         //     return isConnected() ? WiFi.localIP().toString() : "0.0.0.0"; 
         // }
 
-        void setup(const char* ssid, const char* passw) {
+        void startSTA(const char* ssid, const char* passw) {
             uint8_t mac[6];
             WiFi.macAddress(mac);
             sprintf(hostName, "B_%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);

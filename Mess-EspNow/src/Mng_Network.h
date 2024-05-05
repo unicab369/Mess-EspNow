@@ -9,34 +9,6 @@ class Mng_Network {
     Net_EspNow espNow;
     Serv_Tweet tweet;
 
-    int BROADCAST_CHANNEL = 10;
-
-    void _handleCmdPair(SyncItem *item) {
-        switch (item->cue) {
-            case SYNC_MOCK: {
-                //! Slave received
-                Serial.println("\n[Tweet_Pair] SYNC_MOCK received");
-                Serial.printf("\n***Recv Timestamp == %lu", item->timeStamp);
-                tweet.pairing.sendSyncBounce(WiFi.channel(), item->timeStamp);
-                break;
-            }
-            case SYNC_BOUNCE: {
-                //! Master received
-                Serial.println("\n[Tweet_Pair] SYNC_BOUNCE received");
-                Serial.printf("\n*** BouncTime == %lu", item->timeStamp);
-                Serial.printf("\n current Time = %lu", millis());
-                
-                uint32_t transTime = item->getTransmitTime();
-                Serial.printf("\nTransTime = %lu", transTime);
-                break;
-            }
-            default: {
-                Serial.println("\n[Tweet_Pair] Unknown");
-                break;
-            }
-        }
-    }
-
     void _handleCmdTrigger(CommandItem *item) {
         char output[22];
         switch (item->cue) {
@@ -74,10 +46,36 @@ class Mng_Network {
         }
     }
 
+    void _handleCmdPair(SyncItem *item) {
+        switch (item->cue) {
+            case SYNC_MOCK: {
+                //! Slave received
+                Serial.println("\n[Tweet_Pair] SYNC_MOCK received");
+                Serial.printf("\n***Recv Timestamp == %lu", item->timeStamp);
+                tweet.pairing.sendSyncBounce(WiFi.channel(), item->timeStamp);
+                break;
+            }
+            case SYNC_BOUNCE: {
+                //! Master received
+                Serial.println("\n[Tweet_Pair] SYNC_BOUNCE received");
+                Serial.printf("\n*** BouncTime == %lu", item->timeStamp);
+                Serial.printf("\n current Time = %lu", millis());
+                
+                uint32_t transTime = item->getTransmitTime();
+                Serial.printf("\nTransTime = %lu", transTime);
+                break;
+            }
+            default: {
+                Serial.println("\n[Tweet_Pair] Unknown");
+                break;
+            }
+        }
+    }
+
     public:
-        void configureESPNow() {
+        void configureESPNow(int channel) {
             wifi.setTxPower(0);
-            wifi.startAP(true, BROADCAST_CHANNEL);
+            wifi.startAP(true, channel);
             tweet.setup(&espNow);
 
             espNow.setup(WiFi.channel());
