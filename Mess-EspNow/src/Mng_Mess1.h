@@ -9,14 +9,6 @@ class Mng_Mess1 {
     Mng_Network network;
     ControlTimer cTimer;
 
-    unsigned long scanningTimeRef;
-    int scanningChannel = 0;
-
-    void startScanning() {
-        scanningChannel = 1;
-        scanningTimeRef = millis();
-    }
-
     public:
         void setup() {
             network.configureESPNow(10);
@@ -26,6 +18,7 @@ class Mng_Mess1 {
             cTimer.run([&]() {
                 if (cTimer.isSecondInterval(1)) {
                     Serial.printf("\n*cycleCount = %lu, maxCycleTime = %lu", cTimer.cycleCount, cTimer.maxCycleTime);
+                    network.scanningTick();
                 }
 
                 serial.run([&](char* inputStr) {
@@ -45,7 +38,7 @@ class Mng_Mess1 {
                         network.sendTest();
                     }
                     else if(strcmp("scanChannel", inputStr) == 0) {
-
+                        network.scanningStart();
                     }
                     else if (storage.handleConsoleCmd(inputStr)) {
                     } 

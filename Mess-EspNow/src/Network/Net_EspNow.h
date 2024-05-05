@@ -38,7 +38,7 @@ class Base_EspNow: public Interface_Net {
             // wifi_set_channel(channel);
 
             if (esp_now_init() != 0) {
-				Serial.print("[EspN] Init failed"); Serial.println(channel);
+				Serial.print("\n[EspN] Init failed"); 
 				return;                
             }
 
@@ -132,19 +132,12 @@ class Base_EspNow: public Interface_Net {
 #endif
 
 class Net_EspNow: public Base_EspNow {
-    uint32_t selectedChannel = 1;
-
-    void reload() {
-        begin(selectedChannel, receive_callback);
-    }
-
     public:
         // std::function<void(ReceivedPacket*)> callback = [](ReceivedPacket*){};
 
         void setup(uint32_t channel) {
             // AppPrintSeparator("[EspN]", __func__);
-            selectedChannel = channel;
-            reload();
+            begin(channel, receive_callback);
         }
 
         void run(std::function<void(ReceivedPacket*)> callback) {

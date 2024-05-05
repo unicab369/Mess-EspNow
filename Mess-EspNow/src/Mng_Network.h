@@ -4,10 +4,17 @@
 #include "Network/Serv_Tweet.h"
 #include "Network/Net_EspNow.h"
 
+enum Network_State {
+    NETWORK_FAILED,
+    NETWORK_DEFAULT,
+    NETWORK_SCANNING
+};
+
 class Mng_Network {
     Net_Wifi wifi;
     Net_EspNow espNow;
     Serv_Tweet tweet;
+    Network_State state = NETWORK_DEFAULT;
 
     void _handleCmdTrigger(CommandItem *item) {
         char output[22];
@@ -63,6 +70,7 @@ class Mng_Network {
                 
                 uint32_t transTime = item->getTransmitTime();
                 Serial.printf("\nTransTime = %lu", transTime);
+                state = NETWORK_DEFAULT;    //! Stop Scanning
                 break;
             }
             default: {
@@ -72,18 +80,38 @@ class Mng_Network {
         }
     }
 
+    int scanningChannel = 1;
+
     public:
+        void scanningStart() {
+            scanningChannel = 1;
+            state = NETWORK_SCANNING;
+        }
+
+        void scanningTick() {
+            if (state != NETWORK_SCANNING) return;
+
+            if (scanningChannel>12) {
+                state = NETWORK_DEFAULT;
+                return;
+            }
+
+            configureESPNow(scanningChannel);
+            sendMock();
+            scanningChannel++;
+        }
+
         void configureESPNow(int channel) {
             wifi.setTxPower(0);
-            wifi.startAP(true, channel);
+            wifi.startAP(false, channel);
             tweet.setup(&espNow);
 
             espNow.setup(WiFi.channel());
-            Serial.printf("\nWifiChannel = %u", WiFi.channel());
+            Serial.printf("\n[Net] WifiChannel = %u", WiFi.channel());
         }
 
         void sendMock() {
-            tweet.pairing.sendSyncMock(WiFi.channel()); 
+            tweet.pairing.sendSyncMock(WiFi.channel());
         }
 
         void sendTest() {

@@ -68,6 +68,7 @@ class Net_Wifi {
             unsigned long timeDif;
 
             if (forceReset) {
+                //! NOTE: force Reset can take longer, can cause issue if startAP is done back to back
                 WiFi.persistent(true);
                 WiFi.disconnect();
                 WiFi.mode(WIFI_AP_STA);     //! update esp_delay inside this function to reduce wait time

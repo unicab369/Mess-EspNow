@@ -1,4 +1,4 @@
-#define DEBUG_ESPNOW 1
+// #define DEBUG_ESPNOW 1
 #define MS_INTERVAL 50
 
 enum Cue_Trigger: uint8_t {
