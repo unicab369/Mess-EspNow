@@ -8,9 +8,6 @@
 
 class Sto_EEPROM {
    protected:
-      const char name[20] = "EEPROM";
-      // Loggable logger = Loggable(name);
-
       void writeValue(uint16_t address, uint64_t value) {
          for (int i = 0; i < 8; i++) {
                EEPROM.write(address + i, (uint8_t)(value >> (i * 8)));
@@ -26,7 +23,6 @@ class Sto_EEPROM {
       }
 
       void deleteBytes(uint16_t address, uint8_t value, size_t len) {
-         // logger.xLogf("%s @addr = %u", __func__, address);
          for (int i=0; i<len; i++) {
                EEPROM.write(address+i, value);
          }
@@ -34,7 +30,6 @@ class Sto_EEPROM {
       }
 
       void writeBytes(uint16_t address, const void *value, size_t len) {
-         // logger.xLogf("%s @addr = %u", __func__, address);
          byte* val = (byte*) value;
       
          for (int i=0; i<len; i++) {
@@ -48,14 +43,11 @@ class Sto_EEPROM {
       }
 
       void readBytes(uint16_t address, void *value, size_t len) {
-         // logger.xLogLinef("%s @addr = %u len = %zu", __func__, address, len);
          byte* val = (byte*) value;
 
          for (int i=0; i<len; i++) {
                val[i] = EEPROM.read(address+i);
          }
-
-         // AppPrintHex(val, len);
       }
 
       void storeData(uint16_t address, const char *buf, size_t len) {
@@ -86,7 +78,7 @@ bool extractValue(const char* key, char* input, char* output) {
    //! check key
    if (ref != nullptr && strlen(ref)>0 && strcmp(ref, key) == 0) {
       ref = strtok(NULL, "");            // get value
-      strcpy(output, ref);
+      strcpy((char*)output, ref);
       return true;
    } 
 
@@ -152,7 +144,7 @@ class EEPROM_Value: public Sto_EEPROM {
          return check;
       }
 
-      bool storeValue(const char* key, char* input, bool* output) {
+      bool storeBoolValue(const char* key, char* input, bool* output) {
          char boolStr[2];
 
          bool check = extractValue(key, input, boolStr);
@@ -164,17 +156,14 @@ class EEPROM_Value: public Sto_EEPROM {
          return check;
       }
 
-      bool storeValue(const char* key, char* input, uint8_t* output, 
-               std::function<bool(uint8_t)> validate = [](uint8_t) { return true; }) {
+      bool storeInt8Value(const char* key, char* input, uint8_t* output) {
          char valStr[16];
 
          bool check = extractValue(key, input, valStr);
          if (check) {
             uint8_t value = (uint8_t)atoi(valStr);
-            if (validate(value)) {
-               *output = value;
-               storeData();
-            }
+            *output = value;
+            storeData();
          }
 
          return check;

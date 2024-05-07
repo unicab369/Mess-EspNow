@@ -71,6 +71,7 @@ class Mng_Network {
                 uint32_t transTime = item->getTransmitTime();
                 Serial.printf("\nTransTime = %lu", transTime);
                 state = NETWORK_DEFAULT;    //! Stop Scanning
+                scanningComplete(item->srcChannel);
                 break;
             }
             default: {
@@ -83,8 +84,10 @@ class Mng_Network {
     int scanningChannel = 1;
 
     public:
+        std::function<void(uint8_t)> scanningComplete = [](uint8_t channel) {};
+
         void scanningStart() {
-            scanningChannel = 1;
+            scanningChannel = 8;
             state = NETWORK_SCANNING;
         }
 

@@ -48,34 +48,6 @@ class Sto_Stat: public EEPROM_Value<Data_Stats>{
       }
 };
 
-
-// bool extractValues(const char* key, char* input, char *value1, char *value2) {
-//    //# WARNING: strtok detroys the original string, perform operation on copied string
-//    char inputStr[240] = "";
-//    memcpy(inputStr, input, sizeof(inputStr));
-//    char *ref = strtok(inputStr, " ");
-
-//    //! check key
-//    if (strcmp(ref, key) != 0) return false;
-   
-//    //! validate 1st value
-//    ref = strtok(NULL, " ");
-//    // if (ref == nullptr || strlen(ref) < 1) return false;   
-//    if (ref != nullptr && strlen(ref)>0) {
-//       strcpy(value1, ref);
-//    }
-   
-//    //! validate 2nd value
-//    ref = strtok(NULL, " ");
-//    // if (ref == nullptr || strlen(ref) < 1 || value2 == nullptr) return false;   
-//    if (ref != nullptr && strlen(ref) > 0 && value2 !=nullptr) {
-//       ref[strlen(ref)] = '\0';            //! add string terminator
-//       strcpy(value2, ref);
-//    }
-
-//    return true;
-// }
-
 //! WARNING: This object get stored in EEPROM. Keep size minimal, DO NOT inherit
 struct Data_Cred {
    char ssid[33] = "", password[64] = "";
@@ -99,6 +71,33 @@ class Sto_Cred: public EEPROM_Value<Data_Cred> {
             return true;
          }
          else if (storeValue("passw", input, value.password)) {
+            return true;
+         }
+
+         return false;
+      }
+};
+
+struct Data_Commission {
+   uint8_t channel = 0;
+   char sharedKey[32] = "";
+
+   void printData() {
+      Serial.printf("\n[Data_Commission] ckey = %s, cChannel = %u", sharedKey, channel);
+   }
+};
+
+class Sto_Commission: public EEPROM_Value<Data_Commission> {
+   public:
+      bool handleCommand(char* input) {
+         if (strcmp(input, "commission") == 0) {
+            value.printData();
+            return true;
+         }
+         else if (storeValue("cKey", input, value.sharedKey)) {
+            return true;
+         }
+         else if (storeInt8Value("cChannel", input, &value.channel)) {
             return true;
          }
 
@@ -166,15 +165,17 @@ class Sto_IotPlotter: public EEPROM_Value<Data_IotPlotter> {
 };
 
 struct Data_Settings {
-   bool useXSerial = true;     
+   bool useXSerial = true;
+   bool logCycle = true;
    uint8_t espNowLogFreq = 3;
    uint8_t espNowSendFreq = 3;
 
    void printData() {
       // Loggable logger = Loggable("Data_Settings");
       // logger.xLogf("xSerial = %d", useXSerial);
-      Serial.printf("\nespNowLogFreq = %d", espNowLogFreq);
-      Serial.printf("\nespNowSendFreq = %u", espNowSendFreq);
+      Serial.printf("\n[Data_Settings]");
+      Serial.printf("\nlogCycle = %u", logCycle);
+      Serial.printf("\nespNowLogFreq = %u, espNowSendFreq = %u", espNowLogFreq, espNowSendFreq);
    }
 };
 
@@ -185,13 +186,16 @@ class Sto_Settings: public EEPROM_Value<Data_Settings> {
             value.printData();
             return true;
          }
-         else if (storeValue("xSerial", input, &value.useXSerial)) {
+         else if (storeBoolValue("xSerial", input, &value.useXSerial)) {
             return true;
          }
-         else if (storeValue("espNowLogFreq", input, &value.espNowLogFreq)) {
+         else if (storeBoolValue("logCycle", input, &value.logCycle)) {
             return true;
          }
-         else if (storeValue("espNowSendFreq", input, &value.espNowSendFreq)) {
+         else if (storeInt8Value("espNowLogFreq", input, &value.espNowLogFreq)) {
+            return true;
+         }
+         else if (storeInt8Value("espNowSendFreq", input, &value.espNowSendFreq)) {
             return true;
          }
          return false;
@@ -238,6 +242,7 @@ class Mng_Storage {
       Sto_Stat stoStat;             
       Sto_Cred stoCred;             
       Sto_Conf stoConf;
+      Sto_Commission stoCommission;
 
       Sto_Settings stoSettings;             
       Sto_IotPlotter stoPlotter;     
@@ -264,10 +269,11 @@ class Mng_Storage {
          stoCred.loadData(20);            //! len 98
          stoConf.loadData(120);           //! len 43
          stoSettings.loadData(220);       //! len 4
-         stoPlotter.loadData(230);        //! len 96
+         stoPlotter.loadData(330);        //! len 96
+         stoCommission.loadData(430);     //! len 
 
-         stoPeer.loadData(580);           //! Count(5) * len 17
-         stoBehavior.loadData(680);       //! 
+         stoPeer.loadData(800);           //! Count(5) * len 17
+         stoBehavior.loadData(900);       //! 
 
          // xLogSectionf("resetCount = %llu", stoStat.resetCnt());
 
@@ -308,6 +314,9 @@ class Mng_Storage {
          //# behaviors
          else if (stoBehavior.handleCommand(inputStr)) { }
    
+         //# commission
+         else if (stoCommission.handleCommand(inputStr)) { } 
+
          //#
          else if (strcmp(inputStr, "getSens") == 0) {
             Serial.println(valX++);
@@ -358,6 +367,7 @@ class Mng_Storage {
          stoCred.deleteData();
          stoConf.deleteData();
          stoPlotter.deleteData();
+         stoCommission.deleteData();
          stoPeer.deleteData();
          stoBehavior.deleteData();
       }

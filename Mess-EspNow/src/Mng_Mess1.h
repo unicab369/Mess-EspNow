@@ -11,13 +11,21 @@ class Mng_Mess1 {
 
     public:
         void setup() {
+            storage.setupStorage();
             network.configureESPNow(10);
+
+            network.scanningComplete = [&](int channel) {
+                Serial.println("\nIM HERE 3333");
+            };
         }
 
         void run() {
             cTimer.run([&]() {
                 if (cTimer.isSecondInterval(1)) {
-                    Serial.printf("\n*cycleCount = %lu, maxCycleTime = %lu", cTimer.cycleCount, cTimer.maxCycleTime);
+                    if (storage.stoSettings.value.logCycle == true) {
+                        Serial.printf("\n*cycleCount = %lu, maxCycleTime = %lu", cTimer.cycleCount, cTimer.maxCycleTime);
+                    }
+                    
                     network.scanningTick();
                 }
 
