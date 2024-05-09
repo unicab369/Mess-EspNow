@@ -12,8 +12,7 @@ class FS_Obj: public FileInterface {
         }
 
         File openFile(const char* path, FileAccessType type = FS_READ) override { 
-            const char *mode = "r";     // default to read
-            mode = (type == FS_WRITE) ? "w" : "a";
+            const char *mode = (type == FILE_READ) ? "r" : (type == FS_WRITE) ? "w" : "a";
             File file = fs->open(path, mode);
             // AppPrint("[FS] Open", file ? "success" : "failed");
             return file;
@@ -49,6 +48,38 @@ class FS_Obj: public FileInterface {
 
         bool exists(const char* path) override { 
             return fs->exists(path);
+        }
+
+        void listDir(const char* dirname = "/", uint8_t levels = 2) {
+            Serial.printf("Listing directory: %s\n", dirname);
+
+            File root = openFile(dirname);
+            if (!root) {
+                Serial.println("- failed to open directory");
+                return;
+            }
+            if(!root.isDirectory()){
+                Serial.println(" - not a directory");
+                return;
+            }
+
+            File file = root.openNextFile();
+            
+            while(file){
+                if(file.isDirectory()){
+                    Serial.print("  DIR : ");
+                    Serial.println(file.name());
+                    if(levels){
+                        listDir(file.name(), levels - 1);
+                    }
+                } else {
+                    Serial.print("  FILE: ");
+                    Serial.print(file.name());
+                    Serial.print("  SIZE: ");
+                    Serial.println(file.size());
+                }
+                file = root.openNextFile();
+            }
         }
 };
 
@@ -111,13 +142,14 @@ class FS_Obj: public FileInterface {
 
 
 class Sto_LittleFS: public Sto_Interface {
-    #ifdef ESP32
-        FS_Obj obj = FS_Obj(&LittleFS);
-    #else
-        FS_Obj obj = FS_Obj(&LittleFS);
-    #endif
-    
     public:
+        #ifdef ESP32
+            FS_Obj obj = FS_Obj(&LittleFS);
+        #else
+            FS_Obj obj = FS_Obj(&LittleFS);
+        #endif
+    
+
         Sto_LittleFS() : Sto_Interface(&obj) {}
 
         void begin() {

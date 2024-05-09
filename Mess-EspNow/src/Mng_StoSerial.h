@@ -56,7 +56,8 @@ struct Data_Cred {
       // Loggable logger = Loggable("Data_Cred");
       Serial.println();
       Serial.printf("\nssid = %s", ssid);
-      Serial.printf("\npassw = %s", password);  
+      Serial.printf("\npassw = %s", password);
+      Serial.println();
    }
 };
 
@@ -80,10 +81,11 @@ class Sto_Cred: public EEPROM_Value<Data_Cred> {
 
 struct Data_Commission {
    uint8_t channel = 0;
-   char sharedKey[32] = "";
+   char networkKey[32] = "";
+   char softKey[32] = "";
 
    void printData() {
-      Serial.printf("\n[Data_Commission] ckey = %s, cChannel = %u", sharedKey, channel);
+      Serial.printf("\n[Data_Commission] %zu netKey = %s, netChannel = %u", sizeof(this), networkKey, channel);
    }
 };
 
@@ -94,10 +96,13 @@ class Sto_Commission: public EEPROM_Value<Data_Commission> {
             value.printData();
             return true;
          }
-         else if (storeValue("cKey", input, value.sharedKey)) {
+         else if (storeValue("netKey", input, value.networkKey)) {
             return true;
          }
-         else if (storeInt8Value("cChannel", input, &value.channel)) {
+         else if (storeValue("softKey", input, value.softKey)) {
+            return true;
+         }
+         else if (storeInt8Value("netChannel", input, &value.channel)) {
             return true;
          }
 
@@ -257,9 +262,6 @@ class Mng_Storage {
       char sensorDataPath[32] = "";
       bool isValidPath()  { return String(sensorDataPath).isEmpty() == false && sd1.isReady(); }
 
-      // Mng_Storage(): Loggable("Mng_Sto") {}
-
-      int valX = 0;
 
       void setupStorage() {
          // xLogSection(__func__);
@@ -316,11 +318,6 @@ class Mng_Storage {
    
          //# commission
          else if (stoCommission.handleCommand(inputStr)) { } 
-
-         //#
-         else if (strcmp(inputStr, "getSens") == 0) {
-            Serial.println(valX++);
-         }
 
          return RESET_NONE;
       }

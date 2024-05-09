@@ -4,10 +4,15 @@
 #include "Network/Serv_Tweet.h"
 #include "Network/Net_EspNow.h"
 
+#include "WebServer/Web_Server.h"
+
+#define MAX_CONNECTION_CHECK 15
+
 enum Network_State {
-    NETWORK_FAILED,
+    NETWORK_CONNECTING,
+    NETWORK_SCANNING,
+    NETWORK_WIFI_FAILED,
     NETWORK_DEFAULT,
-    NETWORK_SCANNING
 };
 
 class Mng_Network {
@@ -82,26 +87,59 @@ class Mng_Network {
     }
 
     int scanningChannel = 1;
+    int staCheckCount = 0;
 
     public:
         std::function<void(uint8_t)> scanningComplete = [](uint8_t channel) {};
 
-        void scanningStart() {
+        void startScanning() {
             scanningChannel = 8;
             state = NETWORK_SCANNING;
         }
 
-        void scanningTick() {
-            if (state != NETWORK_SCANNING) return;
+        void startSTA(const char* ssid, const char* password) {
+            wifi.startSTA(ssid, password);
+            state = NETWORK_CONNECTING;
+            staCheckCount = 0;
+        }
 
-            if (scanningChannel>12) {
-                state = NETWORK_DEFAULT;
-                return;
+        Network_State networkTick(std::function<void()> onHandle = []() {}) {
+            switch (state) {
+                case NETWORK_WIFI_FAILED:
+                    break;
+                case NETWORK_SCANNING:
+                    Serial.println("NETWORK_SCANNING");
+
+                    if (scanningChannel>12) {
+                        state = NETWORK_DEFAULT;
+                        break;
+                    }
+
+                    configureESPNow(scanningChannel);
+                    sendMock();
+                    scanningChannel++;
+                    break;
+                case NETWORK_CONNECTING:
+                    Serial.println("NETWORK_CONNECTING");
+                    onHandle();
+
+                    if (wifi.isConnected()) {
+                        Serial.println("NETWORK_CONNECTED");
+                        Serial.printf("\nIP = %s", wifi.localIp());
+                        Serial.print(WiFi.localIP());
+                        
+                        state = NETWORK_DEFAULT;
+                        break;
+                    } 
+                    else if (staCheckCount>MAX_CONNECTION_CHECK) {
+                        state = NETWORK_WIFI_FAILED;
+                        break;
+                    }
+                    staCheckCount++;
+                    break;
             }
 
-            configureESPNow(scanningChannel);
-            sendMock();
-            scanningChannel++;
+            return state;
         }
 
         void configureESPNow(int channel) {

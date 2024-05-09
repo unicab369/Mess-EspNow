@@ -8,11 +8,43 @@ class Mng_Mess1 {
 
     Mng_Network network;
     ControlTimer cTimer;
+    Web_Server wServer;
+
+    Sto_LittleFS littleFS;
+
+    void printLog(const char* output) {
+        Serial.printf("\n[Mng_Mess1] %s", output);
+    }
+
+    void startWifi() {
+        printLog("startWifi");
+        Data_Cred cred = storage.stoCred.value;
+        cred.printData();  
+        network.startSTA(cred.ssid, cred.password);
+        // network.configureESPNow(10);
+    }
 
     public:
         void setup() {
             storage.setupStorage();
-            network.configureESPNow(10);
+            startWifi();
+
+            littleFS.begin();
+
+            wServer.onGetFile = [&](const char* path) {
+                // File file = littleFS.obj.openFile("/pages/page1.html");
+                File file = littleFS.obj.openFile(path);
+                //! FOR TESTING ONLY DON'T USE
+                // if (file) {
+                //     while (file.available()) {
+                //         Serial.print(file.read());
+                //     }
+                //     file.close();
+                // }
+                return file;
+            };
+
+            wServer.setup();
 
             network.scanningComplete = [&](int channel) {
                 Serial.println("\nIM HERE 3333");
@@ -26,7 +58,9 @@ class Mng_Mess1 {
                         Serial.printf("\n*cycleCount = %lu, maxCycleTime = %lu", cTimer.cycleCount, cTimer.maxCycleTime);
                     }
                     
-                    network.scanningTick();
+                    network.networkTick([]() {
+                        digitalWrite(2, !digitalRead(2));
+                    });
                 }
 
                 serial.run([&](char* inputStr) {
@@ -34,7 +68,7 @@ class Mng_Mess1 {
                         Serial.println("What is thy bidding my Master?");
                     }       
                     else if (strcmp("wifiReset", inputStr) == 0) {
-                        // onHandleResetWifi();
+                        startWifi();
                     }
                     else if (strcmp("startAP", inputStr) == 0) {
                         // onHandleStartAP();
@@ -46,13 +80,14 @@ class Mng_Mess1 {
                         network.sendTest();
                     }
                     else if(strcmp("scanChannel", inputStr) == 0) {
-                        network.scanningStart();
+                        network.startScanning();
                     }
                     else if (storage.handleConsoleCmd(inputStr)) {
                     } 
                 });
 
                 network.run();
+                wServer.run();
             });
 
             // if (!digitalRead(14)) {

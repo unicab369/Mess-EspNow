@@ -17,11 +17,11 @@ class Net_Wifi {
         bool error = String(ssid).isEmpty() || String(passw).isEmpty();
         // xLogStatus(__func__, !error);
 
-        // ESP.eraseConfig();
-        WiFi.persistent(false);
-        WiFi.disconnect();
-        WiFi.mode(WIFI_AP_STA);
-        startAP(false);
+        // // ESP.eraseConfig();
+        // WiFi.persistent(false);
+        // WiFi.disconnect();
+        // WiFi.mode(WIFI_AP_STA);
+        // startAP(false);
 
         if (!error) {
             WiFi.begin(ssid, passw);
