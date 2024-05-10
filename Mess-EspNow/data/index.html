@@ -1,15 +1,14 @@
 <html>
 <head>
-   <title>Device Conf</title>
-   <script type="module" src="../Components/sharedHeader.js"></script>
-   <script type="module" src="../Components/sharedComps.js"></script>
+   <title>Main Page</title>
+   <script type="module" src="Pages/Components/sharedHeader.js"></script>
 </head>
 <body>
    <shared-header></shared-header>
 
    <div class="app-page">
       <table style="width:100%; font-size:30px">
-         <tr><th colspan='2' style="font-size: 50;">Device Conf</th></tr>
+         <tr><th colspan='2' style="font-size: 50;">Main Page</th></tr>
          <tr><td>&nbsp;</td></tr>
          <tr>
             <td>Device Id</td><td>2222</td>
@@ -20,12 +19,17 @@
          <tr><td>&nbsp;</td></tr>
          <tr>
             <td colspan='2'>
-               <a href="javascript:history.back()"><button class="table-btn">Save</button></a>
+               <button id="myBtn" class="table-btn">Modal</button>
             </td>
          </tr>
          <tr>
             <td colspan='2'>
-               <back-btn></back-btn>
+               <a href="Pages/DevConf/DeviceConf.html"><button class="table-btn">Device Conf</button></a>
+            </td>
+         </tr>
+         <tr>
+            <td colspan='2'>
+               <a href="Pages/NetConf/NetworkConf.html"><button class="table-btn">Network Conf</button></a>
             </td>
          </tr>
       </table>

@@ -15,6 +15,7 @@
 WebServer webServer(80);
 
 class Web_Server {
+    // https://shepherdingelectrons.blogspot.com/2019/04/esp8266-as-spiffs-http-server.html
     String getContentType(String filename) {
         if (filename.endsWith(".html"))     return "text/html";
         else if (filename.endsWith(".css")) return "text/css";
@@ -25,6 +26,7 @@ class Web_Server {
 
     //! pio run --target buildfs
     //! pio run --target uploadfs
+    
     bool handleFileRead(String path) {
         Serial.println("\nhandleFileRead: " + path);
         if (path.endsWith("/")) path += "index.html";         // If a folder is requested, send the index file
@@ -32,12 +34,13 @@ class Web_Server {
         
         File file = onGetFile(path.c_str());
         if (file) {
+            unsigned long ref = millis();
             size_t sent = webServer.streamFile(file, contentType);      // send to the client
             file.close();                                               // close the file
+            Serial.printf("\nFileSize=%zu, ReadTime=%lu", file.size(), millis()-ref);
             return true;
         }
         
-        Serial.println("\tFile Not Found");
         return false;                                         // If the file doesn't exist, return false
     }
 

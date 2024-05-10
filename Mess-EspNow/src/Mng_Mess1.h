@@ -30,17 +30,28 @@ class Mng_Mess1 {
             startWifi();
 
             littleFS.begin();
+            littleFS.obj.listDir("/MainPage");
 
+            File file = littleFS.obj.openFile("Pages/MainPage/MainPage.html");
+            if (file) {
+                Serial.println("IM HERE333");
+            }
+
+            
             wServer.onGetFile = [&](const char* path) {
                 // File file = littleFS.obj.openFile("/pages/page1.html");
                 File file = littleFS.obj.openFile(path);
-                //! FOR TESTING ONLY DON'T USE
-                // if (file) {
+                
+                if (file) {
+                    //! FOR TESTING ONLY DON'T USE
                 //     while (file.available()) {
                 //         Serial.print(file.read());
                 //     }
                 //     file.close();
-                // }
+                } else {
+                    Serial.println("\tFile Not Found");
+                }
+                
                 return file;
             };
 
